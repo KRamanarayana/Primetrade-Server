@@ -19,10 +19,15 @@ router.post('/register', async (req, res) => {
         user = new User({ name, email, password: hashedPassword });
         await user.save();
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const secret = process.env.JWT_SECRET || 'fallback_secret_for_dev_123';
+        const token = jwt.sign({ userId: user._id }, secret, { expiresIn: '7d' });
         res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
     } catch (err) {
-        res.status(500).json({ message: 'Server Error' });
+        console.error('Registration Error:', err);
+        res.status(500).json({
+            message: 'Server Error',
+            error: process.env.NODE_ENV === 'development' ? err.message : undefined
+        });
     }
 });
 
@@ -40,9 +45,11 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+        const secret = process.env.JWT_SECRET || 'fallback_secret_for_dev_123';
+        const token = jwt.sign({ userId: user._id }, secret, { expiresIn: '7d' });
         res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
     } catch (err) {
+        console.error('Login Error:', err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -53,6 +60,7 @@ router.get('/me', authMiddleware, async (req, res) => {
         const user = await User.findById(req.user.userId).select('-password');
         res.json(user);
     } catch (err) {
+        console.error('Get User Error:', err);
         res.status(500).json({ message: 'Server Error' });
     }
 });
