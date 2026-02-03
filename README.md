@@ -22,7 +22,7 @@ Create a `.env` file in the root directory and add the following:
 PORT=5000
 MONGO_URI="mongodb+srv://Gireesh:Gireeshkumar99@cluster0.lhyi7aj.mongodb.net/?appName=Cluster0"
 JWT_SECRET=dev_secret_key_123
-CLIENT_URL=http://localhost:3000
+CLIENT_URL=https://primetrade-client-ramanarayana.vercel.app/
 ```
 
 ## 📦 Installation & Setup
