@@ -11,12 +11,25 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 const allowedOrigins = [
     'http://localhost:3000',
-    process.env.CLIENT_URL // Add your Vercel client URL here
-].filter(Boolean); // Remove undefined values
+    'http://localhost:5173', // Common Vite port
+    'https://primetrade-client-ramanarayana.vercel.app', // Anticipated client URL
+    process.env.CLIENT_URL
+].filter(Boolean);
 
 app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log("Origin not allowed by CORS:", origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
