@@ -20,8 +20,8 @@ This is the backend API for the Primetrade Task Manager, built with Node.js, Exp
 Create a `.env` file in the root directory and add the following:
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
+MONGO_URI="mongodb+srv://Gireesh:Gireeshkumar99@cluster0.lhyi7aj.mongodb.net/?appName=Cluster0"
+JWT_SECRET=dev_secret_key_123
 CLIENT_URL=http://localhost:3000
 ```
 
