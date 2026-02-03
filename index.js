@@ -48,28 +48,42 @@ app.use(cors({
 app.use(express.json());
 
 // database connection
-const { MongoMemoryServer } = require('mongodb-memory-server');
-
-// ... (keep this comment if you want, but I'll replace the block)
-
-// database connection
 const connectDB = async () => {
     try {
-        let mongoUri = process.env.MONGO_URI;
+        const mongoUri = process.env.MONGO_URI;
+        const isVercel = process.env.VERCEL === '1';
 
-        // Try connecting to the configured URI
-        try {
-            await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
-            console.log('MongoDB Connected');
-        } catch (err) {
-            console.log('Local MongoDB failed, starting in-memory database...');
-            const mongod = await MongoMemoryServer.create();
-            mongoUri = mongod.getUri();
-            await mongoose.connect(mongoUri);
-            console.log(`MongoDB Connected (In-Memory) at ${mongoUri}`);
+        if (!mongoUri) {
+            if (isVercel) {
+                console.error('CRITICAL ERROR: MONGO_URI is missing in Vercel environment.');
+                console.error('The application will not be able to store data or authenticate users.');
+                return;
+            }
+            console.log('No MONGO_URI found, attempting to start local in-memory database...');
+            try {
+                const { MongoMemoryServer } = require('mongodb-memory-server');
+                const mongod = await MongoMemoryServer.create();
+                const uri = mongod.getUri();
+                await mongoose.connect(uri);
+                console.log(`MongoDB Connected (In-Memory) at ${uri}`);
+                return;
+            } catch (err) {
+                console.error('Failed to start in-memory database:', err.message);
+                return;
+            }
         }
+
+        // Connect to provided MONGO_URI
+        await mongoose.connect(mongoUri, {
+            serverSelectionTimeoutMS: 5000
+        });
+        console.log('MongoDB Connected to provided URI');
+
     } catch (err) {
-        console.error('Database connection error:', err);
+        console.error('Database connection error:', err.message);
+        if (process.env.VERCEL === '1') {
+            console.error('Check your Vercel environment variables and MongoDB Atlas network access.');
+        }
     }
 };
 
